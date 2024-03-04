@@ -40,7 +40,7 @@ async function main() {
 	console.log(`- found ${root.packages.length} package${root.packages.length === 1 ? '' : 's'}`);
 
 	console.log('Building graphs');
-	const { ungrouped, grouped } = splitGraphs(root.packages, categories);
+	const { ungrouped, grouped, group_filters } = splitGraphs(root.packages, categories);
 	const packages = Object.fromEntries(root.packages.map((pkg) => [pkg.name, pkg]));
 
 	console.log('Drawing');
@@ -68,7 +68,7 @@ async function main() {
 			name: `${group} (grouped)`,
 			filenameBase: `group__${safe_filename(group)}`,
 			filters,
-			interesting: (id: string) => filters.has(id),
+			interesting: (id: string) => group_filters[group].has(id),
 		})),
 		...Object.entries(ungrouped).map(([name, filters]) => ({
 			name,

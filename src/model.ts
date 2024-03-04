@@ -10,7 +10,7 @@ export interface PackageCategory<T = RegExp> {
 	reach?: boolean | number;
 	legend?: string;
 	fill?: string;
-	group?: boolean;
+	group?: boolean | string;
 }
 
 export type CategoryMatchKeys = 'matches' | 'private' | 'reach';

@@ -4,9 +4,16 @@
 import { Node, PackageCategories } from './model.ts';
 import { intersection, union } from './set.ts';
 import { Package, safe_filename } from './package.ts';
-import { declareNodeAttributes, declareObject, declareObjectFromData, DotEdgeStyle } from './graphviz.ts';
+import {
+	declareNodeAttributes,
+	declareObject,
+	declareObjectFromData,
+	DotEdgeStyle,
+	DotShape,
+	isDark,
+	writeAttributes,
+} from './graphviz.ts';
 import { PackageCategory } from './model.ts';
-import { writeAttributes } from './graphviz.ts';
 
 export async function exec(command: string, { args, cwd, input }: { args: string[]; cwd?: string; input?: string }) {
 	const cmd = new Deno.Command(command, {
@@ -55,8 +62,8 @@ export function splitGraphs(packages: Package[], categories: PackageCategories) 
 	packages.map((pkg): [string, Package] => {
 		const category = pkg.matchCategory(categories);
 		const group = category?.group ?? false;
-		const groupName = (group ? category?.id : undefined) ?? '';
-		return [groupName, pkg];
+		const groupName = typeof group === 'string' ? group : undefined;
+		return [(group ? groupName ?? category?.id : undefined) ?? '', pkg];
 	}).forEach(([group, pkg]) => {
 		if (groups[group] === undefined) groups[group] = [];
 		groups[group].push(pkg);
@@ -76,7 +83,10 @@ export function splitGraphs(packages: Package[], categories: PackageCategories) 
 			return [group, group_reach];
 		}),
 	);
-	return { ungrouped, grouped };
+	const group_filters = Object.fromEntries(
+		Object.entries(groups).map(([name, packages]) => [name, new Set(packages.map((pkg) => pkg.name))]),
+	);
+	return { ungrouped, grouped, group_filters };
 }
 
 export function buildGraph(
@@ -172,12 +182,17 @@ export function createGraph(
 
 function declareObjectFromCategory(id: string, category: PackageCategory) {
 	const { id: name, legend, fill } = category;
-	// console.log({ name, label, exampleId, fill, isPrivate });
-	return declareObjectFromData(id, legend ?? name, fill, false, undefined);
+	return declareObject(id, {
+		label: legend ?? name,
+		fillcolor: fill,
+		fontcolor: fill !== undefined && isDark(fill) ? '#ffffff' : '#000000',
+		shape: DotShape.oval,
+	});
 }
 
 export function createLegendFromCategories(categories: PackageCategories, cwd: string) {
-	const size = Math.max(Math.round(Math.sqrt(categories.rules.length)), 1);
+	const shorterSize = Math.max(Math.round(Math.sqrt(categories.rules.length)), 1);
+	const size = Math.max(Math.round(categories.rules.length / shorterSize), 1);
 
 	const init = [
 		'label = "Legend";',

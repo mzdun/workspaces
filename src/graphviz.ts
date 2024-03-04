@@ -147,7 +147,7 @@ export function declareObject(id: string, attr: DotAttributes) {
 	return `${id} [ ${writeAttributes(attr)} ];`;
 }
 
-function isDark(color: string) {
+export function isDark(color: string) {
 	const rgb = parseInt(color.substring(1), 16);
 	const r = (rgb >> 16) & 0xff;
 	const g = (rgb >> 8) & 0xff;
@@ -167,7 +167,7 @@ export function declareObjectFromData(
 		label,
 		fillcolor: fill,
 		fontcolor: fill !== undefined && isDark(fill) ? '#ffffff' : '#000000',
-		shape: isPrivate ? DotShape.doubleoctagon : DotShape.octagon,
+		shape: isPrivate ? DotShape.hexagon : DotShape.octagon,
 		URL,
 	});
 }
