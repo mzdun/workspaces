@@ -1,8 +1,8 @@
 // Copyright (c) 2024 Marcin Zdun
 // This code is licensed under MIT license (see LICENSE for details)
 
-import * as path from '@std/path/mod.ts';
-import * as fs from '@std/fs/mod.ts';
+import * as path from 'https://deno.land/std@0.218.0/path/mod.ts';
+import * as fs from 'https://deno.land/std@0.218.0/fs/mod.ts';
 import { CategoryMatchFunction, PackageCategories, PackageCategory } from './model.ts';
 import { PACKAGE } from './model.ts';
 import { Node } from './model.ts';

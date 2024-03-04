@@ -2,8 +2,8 @@
 // Copyright (c) 2024 Marcin Zdun
 // This code is licensed under MIT license (see LICENSE for details)
 
-import { parseArgs } from '@std/cli/parse_args.ts';
-import * as path from '@std/path/mod.ts';
+import { parseArgs } from 'https://deno.land/std@0.218.0/cli/parse_args.ts';
+import * as path from 'https://deno.land/std@0.218.0/path/mod.ts';
 import { open } from 'https://deno.land/x/open/index.ts';
 import { Package, safe_filename } from './package.ts';
 import { PACKAGE, readPackageCategories } from './model.ts';
