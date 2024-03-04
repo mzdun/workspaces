@@ -1,0 +1,24 @@
+{
+  "imports": {
+    "@std/": "https://deno.land/std@0.218.0/"
+  },
+  "tasks": {
+    "dev": "deno run --allow-read --allow-run --allow-write --watch src/main.ts",
+    "main": "deno run --allow-read --allow-run --allow-write src/main.ts"
+  },
+  "fmt": {
+    "useTabs": true,
+    "lineWidth": 120,
+    "indentWidth": 4,
+    "semiColons": true,
+    "singleQuote": true,
+    "proseWrap": "preserve",
+    "include": [
+      "src/"
+    ],
+    "exclude": [
+      "src/testdata/",
+      "data/fixtures/**/*.ts"
+    ]
+  }
+}
