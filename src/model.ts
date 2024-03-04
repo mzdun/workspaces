@@ -14,12 +14,12 @@ export interface PackageCategory<T = RegExp> {
 }
 
 export type CategoryMatchKeys = 'matches' | 'private' | 'reach';
+
 export type CategoryMatchFunction = (pkg: unknown, category: PackageCategory) => boolean | undefined;
-export type CategoryMatchFunctionGenerator = (strength: string) => CategoryMatchFunction;
 
 export interface PackageCategories<T = RegExp, Matcher = CategoryMatchFunction> {
 	rules: PackageCategory<T>[];
-	order: Matcher;
+	matcher: Matcher;
 }
 
 export interface Node {
@@ -40,18 +40,17 @@ function matcherFunction(pkg: unknown, category: PackageCategory, order: Categor
 
 export async function readPackageCategories(
 	fileName: string | undefined,
-	generators: Record<CategoryMatchKeys, CategoryMatchFunctionGenerator>,
+	generators: Record<CategoryMatchKeys, CategoryMatchFunction>,
 ): Promise<PackageCategories> {
-	if (fileName != undefined) {
+	if (fileName !== undefined && fileName !== '') {
 		const text = await Deno.readTextFile(fileName);
-		const data = JSON.parse(text) as PackageCategories<string, (string | [string, string])[] | undefined>;
+		const data = JSON.parse(text) as PackageCategories<
+			string,
+			CategoryMatchKeys[] | undefined
+		>;
 
-		const order = (data.order ?? ['matches', 'private']).map((pos) => {
-			if (Array.isArray(pos)) {
-				const [name, strength] = pos;
-				return generators[name as CategoryMatchKeys](strength);
-			}
-			return generators[pos as CategoryMatchKeys]('');
+		const matcher = (data.matcher ?? ['matches', 'private', 'reach']).map((pos) => {
+			return generators[pos];
 		}).filter((matcher) => matcher !== undefined);
 
 		return {
@@ -59,8 +58,8 @@ export async function readPackageCategories(
 				...cat,
 				matches: cat.matches === undefined ? undefined : new RegExp(cat.matches),
 			})),
-			order: (pkg, category) => matcherFunction(pkg, category, order),
+			matcher: (pkg, category) => matcherFunction(pkg, category, matcher),
 		};
 	}
-	return { rules: [], order: () => true };
+	return { rules: [], matcher: () => true };
 }

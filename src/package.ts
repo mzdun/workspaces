@@ -3,11 +3,15 @@
 
 import * as path from 'https://deno.land/std@0.218.0/path/mod.ts';
 import * as fs from 'https://deno.land/std@0.218.0/fs/mod.ts';
-import { CategoryMatchFunction, PackageCategories, PackageCategory } from './model.ts';
-import { PACKAGE } from './model.ts';
-import { Node } from './model.ts';
+import {
+	CategoryMatchFunction,
+	CategoryMatchKeys,
+	Node,
+	PACKAGE,
+	PackageCategories,
+	PackageCategory,
+} from './model.ts';
 import { intersection, union } from './set.ts';
-import { CategoryMatchFunctionGenerator, CategoryMatchKeys } from './model.ts';
 
 export function safe_filename(name: string) {
 	return name.replace(/[\/ ]/g, '__').replace(/@/g, '[at]_');
@@ -57,7 +61,7 @@ export class Package {
 
 	matchCategory(categories: PackageCategories) {
 		for (const category of categories.rules) {
-			if (this.matches(category, categories.order)) return category;
+			if (this.matches(category, categories.matcher)) return category;
 		}
 		return undefined;
 	}
@@ -135,36 +139,33 @@ export class Package {
 	static matcherGen = matcherGen;
 }
 
-function matcherGen(): Record<CategoryMatchKeys, CategoryMatchFunctionGenerator> {
+function matcherGen(): Record<CategoryMatchKeys, CategoryMatchFunction> {
 	return {
-		matches: (strength) =>
-			function matches(pkg, category) {
-				if (category.matches !== undefined) {
-					if (!(pkg as Package).name.match(category.matches)) return false;
-					return strength == '' ? undefined : true;
-				}
-				return undefined;
-			},
-		'private': (strength) =>
-			function isPrivate(pkg, category) {
-				if (category.private !== undefined) {
-					if ((pkg as Package).isPrivate !== category.private) return false;
-					return strength == '' ? undefined : true;
-				}
-				return undefined;
-			},
-		reach: (strength) =>
-			function reach(pkg, category) {
-				if (category.reach !== undefined) {
-					const reach = (pkg as Package).reach().size - 1;
-					if (category.reach === true) {
-						if (reach === 0) return false;
-					} else if (category.reach === false) {
-						if (reach > 0) return false;
-					} else if (category.reach !== reach) return false;
-					return strength == '' ? undefined : true;
-				}
-				return undefined;
-			},
+		matches: function matches(pkg, category) {
+			if (category.matches !== undefined) {
+				if (!(pkg as Package).name.match(category.matches)) return false;
+				//return strength === '' ? undefined : true;
+			}
+			return undefined;
+		},
+		'private': function isPrivate(pkg, category) {
+			if (category.private !== undefined) {
+				if ((pkg as Package).isPrivate !== category.private) return false;
+				//return strength === '' ? undefined : true;
+			}
+			return undefined;
+		},
+		reach: function reach(pkg, category) {
+			if (category.reach !== undefined) {
+				const reach = (pkg as Package).reach().size - 1;
+				if (category.reach === true) {
+					if (reach === 0) return false;
+				} else if (category.reach === false) {
+					if (reach > 0) return false;
+				} else if (category.reach !== reach) return false;
+				//return strength === '' ? undefined : true;
+			}
+			return undefined;
+		},
 	};
 }
